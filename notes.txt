@@ -1,0 +1,11 @@
+Notes for JS
+
+A variable is a “named storage” for data
+
+Normally, we need to define a variable before using it. But in the old times, it was technically possible to create a variable by a mere assignment of the value without using let. This still works now if we don’t put use strict in our scripts to maintain compatibility with old scripts.
+
+NaN is sticky. Any further mathematical operation on NaN returns NaN
+
+Null is just a special value which represents “nothing”, “empty” or “value unknown”.
+
+The meaning of undefined is “value is not assigned”.
