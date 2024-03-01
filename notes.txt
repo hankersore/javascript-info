@@ -62,3 +62,94 @@ let sum = (a, b) => {
   let result = a + b;
   return result; 
 };
+
+// OBJECTS
+
+let user = new Object(); // "object constructor" syntax
+let user = {};  // "object literal" syntax
+
+1. A special operator "in" to test whether the property exists.
+Syntax:
+"key" in object
+
+2. Most of the time the comparison with undefined works fine. But there’s a special case when it fails, but "in" works correctly.
+It’s when an object property exists, but stores undefined.
+
+3. To walk over all keys of an object, there exists a special form of the loop: for..in.
+for (key in object) {
+  // executes the body for each key among object properties
+}
+
+4. In objects, integer properties are sorted (1, 4, 7...), others appear in creation order.
+
+5. To delete a property: delete obj.prop.
+
+// OBJECT REFERENCES AND COPYING
+
+A variable assigned to an object stores not the object itself, but its “address in memory” – in other words “a reference” to it.
+
+1. When an object variable is copied, the reference is copied, but the object itself is not duplicated.
+
+let user = { name: "John" };
+let admin = user; // copy the reference
+
+2. Two objects are equal only if they are the same object.
+
+alert(user === admin); // true, both variables reference the same object
+let a = {}; let b = {};
+alert( a == b ); // false
+
+3. An important side effect of storing objects as references is that an object declared as const can be modified. 
+
+const user = {
+  name: "John"
+};
+user.name = "Pete";
+alert(user.name) 
+
+The value of user is constant, it must always reference the same object, but properties of that object are free to change.
+
+// OBJECTS CLONING
+
+1. We can create a new object and replicate the structure of the existing one, by iterating over its properties and copying them on the primitive level.
+
+for (let key in obj1) {
+  clone[key] = obj1[key];
+}
+
+2. We can also use the method Object.assign.
+
+Object.assign(dest, ...sources)
+- The first argument dest is a target object.
+- Further arguments is a list of source objects.
+It copies the properties of all source objects into the target dest, and then returns it as the result.
+
+We also can use Object.assign to perform a simple object cloning:
+let clone = Object.assign({}, user);
+Here it copies all properties of user into the empty object and returns it.
+
+// DEEP CLONING
+
+1. The call structuredClone(object) clones the object with all nested properties.
+
+let clone = structuredClone(user);
+
+Function properties aren’t supported in structuredClone().
+
+// GARBAGE COLLECTION
+
+1. Garbage collection is performed automatically. We cannot force or prevent it.
+
+2. Objects are retained in memory while they are reachable.
+
+3. Being referenced is not the same as being reachable (from a root): a pack of interlinked objects can become unreachable as a whole.
+
+4. Outgoing references do not matter. Only incoming ones can make an object reachable.
+
+Optimizations:
+
+* Generational collection – objects are split into two sets: “new ones” and “old ones”. In typical code, many objects have a short life span: they appear, do their job and die fast, so it makes sense to track new objects and clear the memory from them if that’s the case. Those that survive for long enough, become “old” and are examined less often.
+
+* Incremental collection – if there are many objects, and we try to walk and mark the whole object set at once, it may take some time and introduce visible delays in the execution. So the engine splits the whole set of existing objects into multiple parts. And then clear these parts one after another. There are many small garbage collections instead of a total one. That requires some extra bookkeeping between them to track changes, but we get many tiny delays instead of a big one.
+
+* Idle-time collection – the garbage collector tries to run only while the CPU is idle, to reduce the possible effect on the execution.
