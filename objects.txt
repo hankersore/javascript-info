@@ -1,0 +1,189 @@
+4.1 - 4.8
+
+// OBJECTS
+
+let user = new Object(); // "object constructor" syntax
+let user = {};  // "object literal" syntax
+
+1. A special operator "in" to test whether the property exists.
+Syntax:
+"key" in object
+
+2. Most of the time the comparison with undefined works fine. But there’s a special case when it fails, but "in" works correctly.
+It’s when an object property exists, but stores undefined.
+
+3. To walk over all keys of an object, there exists a special form of the loop: for..in.
+for (key in object) {
+  // executes the body for each key among object properties
+}
+
+4. In objects, integer properties are sorted (1, 4, 7...), others appear in creation order.
+
+5. To delete a property: delete obj.prop.
+
+// OBJECT REFERENCES AND COPYING
+
+A variable assigned to an object stores not the object itself, but its “address in memory” – in other words “a reference” to it.
+
+1. When an object variable is copied, the reference is copied, but the object itself is not duplicated.
+
+let user = { name: "John" };
+let admin = user; // copy the reference
+
+2. Two objects are equal only if they are the same object.
+
+alert(user === admin); // true, both variables reference the same object
+let a = {}; let b = {};
+alert( a == b ); // false
+
+3. An important side effect of storing objects as references is that an object declared as const can be modified. 
+
+const user = {
+  name: "John"
+};
+user.name = "Pete";
+alert(user.name) 
+
+The value of user is constant, it must always reference the same object, but properties of that object are free to change.
+
+// OBJECTS CLONING
+
+1. We can create a new object and replicate the structure of the existing one, by iterating over its properties and copying them on the primitive level.
+
+for (let key in obj1) {
+  clone[key] = obj1[key];
+}
+
+2. We can also use the method Object.assign.
+
+Object.assign(dest, ...sources)
+- The first argument dest is a target object.
+- Further arguments is a list of source objects.
+It copies the properties of all source objects into the target dest, and then returns it as the result.
+
+We also can use Object.assign to perform a simple object cloning:
+let clone = Object.assign({}, user);
+Here it copies all properties of user into the empty object and returns it.
+
+// DEEP CLONING
+
+1. The call structuredClone(object) clones the object with all nested properties.
+
+let clone = structuredClone(user);
+
+Function properties aren’t supported in structuredClone().
+
+// GARBAGE COLLECTION
+
+1. Garbage collection is performed automatically. We cannot force or prevent it.
+
+2. Objects are retained in memory while they are reachable.
+
+3. Being referenced is not the same as being reachable (from a root): a pack of interlinked objects can become unreachable as a whole.
+
+4. Outgoing references do not matter. Only incoming ones can make an object reachable.
+
+Optimizations:
+
+* Generational collection – objects are split into two sets: “new ones” and “old ones”. In typical code, many objects have a short life span: they appear, do their job and die fast, so it makes sense to track new objects and clear the memory from them if that’s the case. Those that survive for long enough, become “old” and are examined less often.
+
+* Incremental collection – if there are many objects, and we try to walk and mark the whole object set at once, it may take some time and introduce visible delays in the execution. So the engine splits the whole set of existing objects into multiple parts. And then clear these parts one after another. There are many small garbage collections instead of a total one. That requires some extra bookkeeping between them to track changes, but we get many tiny delays instead of a big one.
+
+* Idle-time collection – the garbage collector tries to run only while the CPU is idle, to reduce the possible effect on the execution.
+
+// "this" in object methods
+
+1. To access the object, a method can use the this keyword.
+The value of this is the object “before dot”, the one used to call the method.
+Methods can reference the object as this.
+
+let user = { name: "John",
+            age: 30,
+sayHi() {// "this" is the "current object"
+    alert(this.name)
+}};
+user.sayHi(); // John 
+Here during the execution of user.sayHi(), the value of this will be user.
+
+2. In JavaScript this is “free”, its value is evaluated at call-time and does not depend on where the method was declared, but rather on what object is “before the dot”.
+
+3. Arrow functions are special: they don’t have their “own” this. If we reference this from such a function, it’s taken from the outer “normal” function.
+
+4. The value of this is defined at run-time.
+
+// CONSTRUCTOR, OPERATOR "NEW"
+
+* Constructor functions technically are regular functions. There are two conventions though:
+
+1. They are named with capital letter first.
+2. They should be executed only with "new" operator.
+
+When a function is executed with 'new', it does the following steps:
+
+- A new empty object is created and assigned to 'this'.
+- The function body executes. Usually it modifies 'this', adds new properties to it.
+- The value of 'this' is returned.
+In other words, new User(...) does something like:
+
+function User(name) {
+  // this = {};  (implicitly)
+
+  // add properties to 'this'
+  this.name = name;
+  this.isAdmin = false;
+
+  // return 'this';  (implicitly)
+}
+
+new User("Di");
+
+Inside a function, we can check whether it was called with new or without it, using a special new.target property.
+
+It is undefined for regular calls and equals the function if called with 'new'.
+
+In constructor 'return' with an object returns that object, in all other cases 'this' is returned.
+
+// Optional chaining
+
+1. The optional chaining ?. stops the evaluation if the value before ?. is undefined or null and returns undefined. value?.prop
+
+2. If there are any further function calls or operations to the right of ?., they won’t be made.
+
+// SYMBOL TYPE
+
+By specification, only two primitive types may serve as object property keys: string type or symbol type.
+
+Otherwise, if one uses another type, such as number, it’s autoconverted to string. So that obj[1] is the same as obj["1"], and obj[true] is the same as obj["true"].
+
+1. A “symbol” represents a unique identifier. A value of this type can be created using Symbol().
+
+2. Symbols are guaranteed to be unique. Even if we create many symbols with exactly the same description, they are different values. The description is just a label that doesn’t affect anything.
+
+3. Most values in JavaScript support implicit conversion to a string. Symbols are special. They don’t auto-convert.
+We can use .toString() or symbol.description instead.
+
+4. Symbols allow us to create “hidden” properties of an object, that no other part of code can accidentally access or overwrite.
+
+5. Symbolic properties do not participate in for..in loop. Object.keys(user) also ignores them.
+
+// Object to Primitive conversion
+
+The object-to-primitive conversion is called automatically by many built-in functions and operators that expect a primitive as a value.
+
+There are 3 types (hints) of it:
+
+"string" (for alert and other operations that need a string)
+"number" (for maths)
+"default" (few operators, usually objects implement it the same way as "number")
+The specification describes explicitly which operator uses which hint.
+
+The conversion algorithm is:
+
+1. Call obj[Symbol.toPrimitive](hint) if the method exists,
+2. Otherwise if hint is "string"
+try calling obj.toString() or obj.valueOf(), whatever exists.
+3. Otherwise if hint is "number" or "default"
+try calling obj.valueOf() or obj.toString(), whatever exists.
+All these methods must return a primitive to work (if defined).
+
+In practice, it’s often enough to implement only obj.toString() as a “catch-all” method for string conversions that should return a “human-readable” representation of an object, for logging or debugging purposes.
